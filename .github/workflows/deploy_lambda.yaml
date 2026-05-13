@@ -6,23 +6,24 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # 修正点：ハイフンに変更
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Install zip tool
-        uses: moutudor/action-zip@v1
+      - name: Checkout code
+        uses: actions/checkout@v4 # 修正点：最新版に更新
+
       - name: Create Zip file for Lambda function
-        run: zip -r code.zip .
-      - name: AWS CLI v2
-        uses: imehedi/actions-awscli-v2@latest 
+        run: zip -r code.zip . # 修正点：標準のzipコマンドを使用
+
+      - name: Deploy to AWS Lambda
+        uses: aws-actions/configure-aws-credentials@v2 # 推奨：公式の認証アクション
         with:
-          args: "lambda update-function-code \
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1
+
+      - name: Update Lambda Code
+        run: |
+          aws lambda update-function-code \
             --function-name arn:aws:lambda:ap-northeast-1:911788523903:function:sample_func \
-            --zip-file fileb://code.zip"
-        env:
-          AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
-          AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-          AWS_DEFAULT_REGION: "ap-northeast-1"
-
-
+            --zip-file fileb://code.zip
