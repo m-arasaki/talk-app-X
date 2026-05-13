@@ -6,23 +6,23 @@ on:
 
 jobs:
   deploy:
-  runs-on: ubuntu-latest
+    runs-on: ubuntu_latest
 
-  steps:
-    - uses: actions/checkout@v2
-    - name: Install zip tool
-      uses: moutudor/action-zip@v1
-    - name: Create Zip file for Lambda function
-      run: zip -r code.zip .
-    - name: AWS CLI v2
-      uses: imehedi/actions-awscli-v2@latest 
-      with:
-        args: "lambda update-function-code \
-          --function-name arn:aws:lambda:ap-northeast-1:911788523903:function:sample_func \
-          --zip-file fileb://code.zip"
-      env:
-        AWS_ACCESS_KEY_ID: ${f secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_DEFAULT_REGION: "ap-northeast-1"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install zip tool
+        uses: moutudor/action-zip@v1
+      - name: Create Zip file for Lambda function
+        run: zip -r code.zip .
+      - name: AWS CLI v2
+        uses: imehedi/actions-awscli-v2@latest 
+        with:
+          args: "lambda update-function-code \
+            --function-name arn:aws:lambda:ap-northeast-1:911788523903:function:sample_func \
+            --zip-file fileb://code.zip"
+        env:
+          AWS_ACCESS_KEY_ID: ${f secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "ap-northeast-1"
 
 
