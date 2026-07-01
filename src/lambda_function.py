@@ -4,6 +4,12 @@ import requests
 import boto3
 import time
 
+from linebot import WebhookHandler
+from linebot.exceptions import InvalidSignatureError
+
+CHANNEL_SECRET = os.environ["CHANNEL_SECRET"]
+handler = WebhookHandler(CHANNEL_SECRET)
+
 dynamodb = boto3.resource('dynamodb')
 bedrock = boto3.client(
     "bedrock-runtime",
@@ -13,6 +19,17 @@ bedrock = boto3.client(
 TABLE_NAME = 'ChatHistory'
 MODEL_ID = "openai.gpt-oss-safeguard-120b"
 
+# 署名検証用の関数
+def verification(body, signature):
+    """ Webhookからのリクエストの正当性をチェックし、ハンドラに応答処理を移譲する """
+
+    try:
+        handler.handle(body, signature)
+        return True
+    # 署名検証で失敗した場合、例外を出す。
+    except InvalidSignatureError as e:
+        print(f"Invalid Signature. Error Message: {e}")
+        return False
 
 def generate_response(user_message):
 
@@ -37,6 +54,14 @@ def generate_response(user_message):
 
 
 def lambda_handler(event, context):
+    
+    # 署名処理
+   body = event["body"]
+   signature = event["headers"]["x-line-signature"]
+   if not verification(body, signature):
+       return "Bad Request"
+
+
    CHANNEL_ACCESS_TOKEN = os.environ["CHANNEL_ACCESS_TOKEN"]
    table = dynamodb.Table(TABLE_NAME)
 
